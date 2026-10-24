@@ -1,0 +1,38 @@
+name: Tester feedback
+description: Five short questions after trying ThoughtSpace. Takes two minutes.
+labels: [tester-feedback]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for testing. Short answers are perfect. Please don't paste API keys or anything private."
+  - type: dropdown
+    id: got-going
+    attributes:
+      label: Did you get it installed and connected to a model?
+      options: ["Yes, without trouble", "Yes, but it took effort", "No, I got stuck"]
+    validations:
+      required: true
+  - type: dropdown
+    id: model
+    attributes:
+      label: Which model did you use?
+      options: [OpenRouter sign-in, OpenAI key, Anthropic Claude key, Google Gemini key, Groq key, Ollama (local), Something else, None]
+  - type: textarea
+    id: stuck
+    attributes:
+      label: Where did you get stuck or confused, if anywhere?
+  - type: textarea
+    id: liked
+    attributes:
+      label: What was the most useful or surprising moment?
+  - type: dropdown
+    id: again
+    attributes:
+      label: Would you open it again tomorrow without being asked?
+      options: ["Yes", "Maybe", "No"]
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: If you could change one thing, what would it be?

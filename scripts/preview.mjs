@@ -1,0 +1,17 @@
+import {chromium} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
+await mkdir('artifacts',{recursive:true});
+const browser=await chromium.launch({channel:'msedge'});
+const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto('http://localhost:3000');await page.screenshot({path:'artifacts/workspace-empty.png',fullPage:true});
+await page.getByRole('textbox',{name:'Capture a thought',exact:true}).fill('I need to finish the proposal. I also have an idea for a customer dashboard, and I should prepare questions for Friday’s meeting.');
+await page.getByRole('button',{name:'Capture and extract ideas',exact:true}).click();
+await page.getByRole('button',{name:'Move Finish the proposal to canvas',exact:true}).click();
+await page.getByRole('button',{name:'Move A customer dashboard to canvas',exact:true}).click();
+const dashboard=page.getByTestId('idea-card').filter({has:page.getByRole('heading',{name:'A customer dashboard',exact:true})});
+await dashboard.click();const box=await dashboard.boundingBox();await page.mouse.move(box.x+60,box.y+40);await page.mouse.down();await page.mouse.move(box.x+80,box.y+100,{steps:10});await page.mouse.up();
+await page.getByRole('button',{name:'Notes',exact:true}).click();await page.getByRole('textbox',{name:'Add a note',exact:true}).fill('Start with what customers need to see each morning. Explore activation, progress, and a clear next action.');await page.getByRole('button',{name:'Save note to idea',exact:true}).click();
+await page.getByRole('button',{name:'Dismiss notification',exact:true}).click();await page.screenshot({path:'artifacts/workspace-populated.png',fullPage:true});
+console.log(JSON.stringify({pageErrors:errors,position:await page.evaluate(()=>JSON.parse(localStorage.getItem('thoughtspace.workspace.v1')).cards.find(c=>c.title==='A customer dashboard').position)}));
+await browser.close();

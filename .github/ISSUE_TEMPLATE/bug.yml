@@ -1,0 +1,29 @@
+name: Something broke
+description: An error, a crash, or something that didn't do what it said.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, and what you saw. A screenshot helps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Help → About Thoughtspace shows it.
+      placeholder: "1.11.0"
+  - type: dropdown
+    id: model
+    attributes:
+      label: Which AI service were you using?
+      options: [OpenRouter, OpenAI, Anthropic Claude, Google Gemini, Groq, Ollama (local), Another OpenAI-compatible server, None]
+  - type: markdown
+    attributes:
+      value: "Please don't paste API keys or private thoughts. Your map stays on your computer, and nobody needs it to fix a bug."

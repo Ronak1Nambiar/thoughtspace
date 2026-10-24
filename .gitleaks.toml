@@ -1,0 +1,7 @@
+# Test fixtures use obviously fake keys (gsk_abcdefgh..., sk-or-v1-secretkey..., sk-ant-1111).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake keys in unit tests"
+paths = ['''tests/.*\.test\.mjs''']

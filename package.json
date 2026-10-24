@@ -1,0 +1,121 @@
+{
+  "name": "thoughtspace",
+  "version": "1.11.4",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs --dev",
+    "start": "node server.mjs",
+    "build": "vite build",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
+    "desktop": "npm run build:wake && npm run build:whisper && npm run build && electron .",
+    "package:desktop": "npm run build:wake && npm run build:whisper && npm run build && electron-builder --win portable nsis --x64 --config.electronDist=node_modules/electron/dist",
+    "package:desktop:cross": "npm run build:wake && npm run build && electron-builder --win portable nsis --x64",
+    "test:desktop": "node scripts/verify-desktop.mjs",
+    "test:library": "npm run build && node scripts/verify-library.mjs",
+    "test:models": "npm run build && node scripts/verify-models.mjs",
+    "build:wake": "node scripts/build-wake-listener.mjs",
+    "build:whisper": "node scripts/fetch-whisper.mjs",
+    "test:local": "node scripts/verify-local-llm.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "electron-updater": "^6.8.9",
+    "express": "^5.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "stream-json": "^1.9.1",
+    "vite": "^6.1.0",
+    "yauzl": "^3.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0",
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
+    "yazl": "^3.3.1"
+  },
+  "main": "desktop/main.cjs",
+  "productName": "Thoughtspace",
+  "description": "A conversational thinking workspace for your ideas",
+  "author": "The ThoughtSpace contributors",
+  "build": {
+    "appId": "com.thoughtspace.desktop",
+    "productName": "Thoughtspace",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "server.mjs",
+      "llm-providers.mjs",
+      "llm-signin.mjs",
+      "extraction.mjs",
+      "src/assistant.js",
+      "assist.mjs",
+      "src/voices.js",
+      "library/**/*",
+      "connectors/**/*",
+      "package.json",
+      "!desktop/icon.svg",
+      "!desktop/native/**/*",
+      "!desktop/WakeListener.cs"
+    ],
+    "asar": true,
+    "win": {
+      "icon": "desktop/icon.ico",
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "signExecutable": false
+    },
+    "portable": {
+      "artifactName": "Thoughtspace-${version}-Windows.exe"
+    },
+    "nsis": {
+      "artifactName": "Thoughtspace-${version}-Setup.exe",
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Thoughtspace",
+      "deleteAppDataOnUninstall": false
+    },
+    "extraResources": [
+      {
+        "from": "desktop/native/WakeListener.exe",
+        "to": "wake/WakeListener.exe"
+      },
+      {
+        "from": "desktop/native/whisper",
+        "to": "whisper",
+        "filter": [
+          "*.exe",
+          "*.dll",
+          "*.bin"
+        ]
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Ronak1Nambiar",
+        "repo": "thoughtspace",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ronak1Nambiar/thoughtspace.git"
+  },
+  "homepage": "https://github.com/Ronak1Nambiar/thoughtspace"
+}

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThoughtSpace: think out loud, see it on a map</title>
+<meta name="description" content="A free, open-source Windows app. Talk through what's on your mind; ideas land on a map, the map brings forward what you're talking about, and suggestions land as items you can keep. Speech-to-text runs on your computer. Bring any AI model.">
+<meta property="og:title" content="ThoughtSpace: think out loud, see it on a map">
+<meta property="og:description" content="Talk, and your ideas land on a map. Free, open source, runs on your computer, any AI model.">
+<meta property="og:image" content="media/live-map.gif">
+<link rel="icon" href="media/icon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Space Grotesk";src:url(fonts/space-grotesk.woff2) format("woff2");font-weight:300 700;font-display:swap}
+@font-face{font-family:"Plex";src:url(fonts/plex-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Plex";src:url(fonts/plex-500.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Plex";src:url(fonts/plex-600.woff2) format("woff2");font-weight:600;font-display:swap}
+
+/* Drafting paper and ink. The app itself appears as a dark window laid on the paper. */
+:root{
+  --paper:#edf2f5; --paper-2:#e2e9ee; --rule:#c9d5de; --ink:#13233a; --ink-2:#47586d;
+  --link:#137363; --mint:#7fdcc8; --night:#11161b; --night-2:#1a2128; --night-line:#2b3540; --night-text:#e4eaee; --night-muted:#8796a3;
+  --measure:62ch;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.6 "Plex",system-ui,sans-serif;
+  background-image:linear-gradient(var(--paper-2) 1px,transparent 1px),linear-gradient(90deg,var(--paper-2) 1px,transparent 1px);background-size:28px 28px;background-position:-1px -1px}
+a{color:var(--link);text-underline-offset:.18em}
+a:focus-visible,button:focus-visible{outline:3px solid var(--link);outline-offset:3px;border-radius:4px}
+.wrap{width:min(1120px,100% - 40px);margin-inline:auto}
+h1,h2,h3{font-family:"Space Grotesk",system-ui,sans-serif;letter-spacing:-.01em;margin:0}
+
+/* Top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.brand{display:flex;align-items:center;gap:10px;font:600 1.15rem "Space Grotesk",sans-serif;color:var(--ink);text-decoration:none}
+.brand img{width:28px;height:28px}
+.bar nav{display:flex;gap:22px;font-size:.95rem}
+.bar nav a{color:var(--ink-2);text-decoration:none}.bar nav a:hover{color:var(--ink);text-decoration:underline}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:56px;align-items:center;padding:40px 0 72px}
+.hero h1{font-size:clamp(2.4rem,4.6vw,3.6rem);line-height:1.02;font-weight:600}
+.hero h1 span{display:block;color:var(--ink-2);font-weight:400}
+.lede{max-width:44ch;margin:24px 0 32px;font-size:1.15rem;color:var(--ink-2)}
+.get{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px}
+.download{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:10px;background:var(--ink);color:#fff;text-decoration:none;font:600 1.05rem "Space Grotesk",sans-serif;box-shadow:0 2px 0 #0a1424}
+.download:hover{background:#1d3352}
+.download svg{width:18px;height:18px}
+.get small{color:var(--ink-2);font-size:.92rem;line-height:1.4}
+
+/* The demo window: one orchestrated moment, played once. */
+.window{position:relative;background:var(--night);border-radius:14px;box-shadow:0 30px 60px -30px rgba(19,35,58,.55),0 0 0 1px #0c1014;overflow:hidden;color:var(--night-text)}
+.window header{display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid var(--night-line);font:500 .78rem "Plex",sans-serif;color:var(--night-muted)}
+.window header i{width:9px;height:9px;border-radius:50%;background:#2c3742}
+.window header b{margin-left:8px;font-weight:500}
+.said{margin:16px 18px 0;padding:10px 14px;border-left:2px solid var(--mint);background:var(--night-2);font-size:clamp(.7rem,2.5vw,.92rem);min-height:2.6em;display:flex;align-items:center}
+.said q{quotes:none;white-space:nowrap;overflow:hidden;display:inline-block;max-width:0;animation:type 1.9s steps(46,end) .5s forwards}
+.stage{position:relative;aspect-ratio:16/9.4;margin:6px 0 0}
+.stage svg{position:absolute;inset:0;width:100%;height:100%}
+.stage path{fill:none;stroke:#3a4652;stroke-width:1.4;vector-effect:non-scaling-stroke}
+.stage path.item{stroke:var(--mint);stroke-dasharray:5 5;opacity:0;animation:show .5s forwards}
+.node{position:absolute;transform:translate(-50%,-50%);width:23%;padding:9px 11px;border-radius:10px;background:#1b232b;border:1px solid #2f3a45;font:500 clamp(.6rem,1.3vw,.82rem)/1.25 "Space Grotesk",sans-serif;z-index:1;animation:dim .6s 2.6s forwards}
+.node.focus{animation:glow .7s 2.5s forwards}
+.node.item{width:21%;background:var(--night);z-index:2;border-style:dashed;border-color:#3f8f80;font:400 clamp(.58rem,1.15vw,.74rem)/1.25 "Plex",sans-serif;opacity:0;animation:land .55s forwards}
+.node.item em{display:block;font-style:normal;font-size:.8em;color:var(--mint);margin-top:3px}
+.n1{left:31%;top:47%}.n2{left:62%;top:46%}.n3{left:84%;top:80%}.n4{left:14%;top:82%}.n5{left:84%;top:16%}.n6{left:46%;top:86%}
+.i1{left:12%;top:20%;animation-delay:3.1s!important}.i2{left:12%;top:64%;animation-delay:3.35s!important}.i3{left:63%;top:13%;animation-delay:3.6s!important}
+.p1{animation-delay:3.1s}.p2{animation-delay:3.35s}.p3{animation-delay:3.6s}
+@keyframes type{to{max-width:100%}}
+@keyframes glow{to{border-color:var(--mint);box-shadow:0 0 0 6px rgba(127,220,200,.1),0 0 28px rgba(127,220,200,.35)}}
+@keyframes dim{to{color:#56636f;border-color:#232c35;background:#151b21}}
+@keyframes land{from{opacity:0;transform:translate(-50%,-38%)}to{opacity:1;transform:translate(-50%,-50%)}}
+@keyframes show{to{opacity:.8}}
+.replay{position:absolute;right:12px;bottom:10px;background:none;border:1px solid var(--night-line);color:var(--night-muted);border-radius:6px;font:500 .75rem "Plex",sans-serif;padding:4px 9px;cursor:pointer}
+.replay:hover{color:var(--night-text)}
+@media (prefers-reduced-motion:reduce){
+  .said q{animation:none;max-width:100%}
+  .node,.node.focus,.node.item,.stage path.item{animation-duration:0s!important;animation-delay:0s!important}
+  .replay{display:none}
+}
+
+/* What it does */
+section{padding:72px 0;border-top:1px solid var(--rule)}
+section>h2{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:600;max-width:24ch;line-height:1.15}
+.does{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;margin-top:40px}
+.does h3{font-size:1.25rem;font-weight:600;margin-bottom:10px}
+.does p{margin:0;color:var(--ink-2)}
+.real{margin-top:56px}
+.real img{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 24px 50px -28px rgba(19,35,58,.5),0 0 0 1px #0c1014}
+.real figcaption{margin-top:12px;color:var(--ink-2);font-size:.95rem;max-width:var(--measure)}
+
+/* Privacy */
+.where{margin-top:32px;border-collapse:collapse;width:100%;max-width:860px;font-size:1rem}
+.where th,.where td{text-align:left;vertical-align:top;padding:14px 18px 14px 0;border-bottom:1px solid var(--rule)}
+.where th{font:600 1rem "Space Grotesk",sans-serif;width:30%;padding-right:24px}
+.where td{color:var(--ink-2)}
+.note{max-width:var(--measure);margin-top:24px}
+
+/* Install: a real sequence, so it is numbered. */
+.steps{counter-reset:s;list-style:none;padding:0;margin:36px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
+.steps li{counter-increment:s;position:relative;padding-top:52px}
+.steps li::before{content:counter(s);position:absolute;top:0;left:0;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font:600 1.05rem "Space Grotesk",sans-serif}
+.steps h3{font-size:1.15rem;font-weight:600;margin-bottom:8px}
+.steps p{margin:0;color:var(--ink-2)}
+.steps kbd{font:500 .9em "Plex",sans-serif;background:#fff;border:1px solid var(--rule);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--ink)}
+.again{margin-top:44px}
+
+footer{padding:36px 0 56px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:.95rem;display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer p{margin:0}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:40px;padding-top:16px}
+  .does,.steps{grid-template-columns:1fr;gap:28px}
+  .bar nav a:not(:last-child){display:none}
+  .where th{width:auto}
+}
+@media (max-width:520px){
+  .stage{aspect-ratio:4/4}
+  .node{width:27%}.node.item{width:26%}.n5,.to-n5{display:none}
+  .where,.where tbody,.where tr,.where th,.where td{display:block;width:100%}
+  .where th{border-bottom:0;padding-bottom:2px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <a class="brand" href="./"><img src="media/icon.svg" alt="">thoughtspace</a>
+    <nav aria-label="Site"><a href="#what">What it does</a><a href="#privacy">Your data</a><a href="https://github.com/Ronak1Nambiar/thoughtspace">GitHub</a></nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1>Think out loud. <span>Your ideas land on a map.</span></h1>
+        <p class="lede">Talk through what's on your mind. Each idea becomes a card, the map brings forward whatever you're talking about, and your assistant's next steps land under it as items you can keep.</p>
+        <div class="get">
+          <a class="download" data-download href="https://github.com/Ronak1Nambiar/thoughtspace/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>Download for Windows</a>
+          <small data-version>Free and open source.<br>Windows 10 and 11.</small>
+        </div>
+      </div>
+
+      <figure class="window" aria-label="Animation: you ask how to keep a side shop going before a craft fair; the map highlights those two thoughts and three suggested next steps appear under them." style="margin:0">
+        <header><i></i><i></i><i></i><b>Thought map</b></header>
+        <div class="said" aria-hidden="true"><q>How do I keep the candle shop going before the craft fair?</q></div>
+        <div class="stage" aria-hidden="true" data-stage>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M30 46 L62 46"/><path d="M62 46 L84 80"/><path d="M30 46 L14 82"/><path class="to-n5" d="M62 46 L84 16"/>
+            <path class="item p1" d="M30 46 L12 20"/><path class="item p2" d="M30 46 L12 64"/><path class="item p3" d="M62 46 L63 13"/>
+          </svg>
+          <div class="node n1 focus">Etsy candle shop</div>
+          <div class="node n2 focus">Holiday craft fair</div>
+          <div class="node n3">Half marathon in March</div>
+          <div class="node n4">Learn Spanish</div>
+          <div class="node n5">Repaint the kitchen</div>
+          <div class="node n6">Plan a camping trip</div>
+          <div class="node item i1">Pour a holiday batch on Sunday<em>Suggested</em></div>
+          <div class="node item i2">Photograph and list five candles<em>Suggested</em></div>
+          <div class="node item i3">Book a booth table<em>Suggested</em></div>
+        </div>
+        <button class="replay" type="button" data-replay>Play again</button>
+      </figure>
+    </div>
+
+    <section id="what">
+      <h2>A thinking partner that keeps up with you</h2>
+      <div class="does">
+        <div><h3>Talk, and the map follows</h3><p>Mention something that's already on your map and it glides into view with everything linked to it. No duplicate cards, no hunting.</p></div>
+        <div><h3>Use the AI you already have</h3><p>Sign in with OpenRouter in one click, paste a key for Claude, GPT, Gemini or Groq, or run fully offline with Ollama. Switch any time.</p></div>
+        <div><h3>Your voice stays on your computer</h3><p>Speech-to-text runs on your PC, so talking works without any key or account. Your map is saved locally, never on our servers. There are none.</p></div>
+      </div>
+      <figure class="real">
+        <img src="media/live-map.gif" width="860" height="538" loading="lazy" alt="The real app: after a spoken question about a candle shop and a craft fair, the map glides to both thoughts and four suggested items appear around them.">
+        <figcaption>The real app, not a mock-up. Suggested items are dashed until you keep them, and you can add your own under any card.</figcaption>
+      </figure>
+    </section>
+
+    <section id="privacy">
+      <h2>What leaves your computer</h2>
+      <table class="where">
+        <tbody>
+          <tr><th scope="row">Your voice</th><td>Nothing, by default. It's transcribed on your PC. You can choose Groq or OpenAI instead in Settings.</td></tr>
+          <tr><th scope="row">What you said</th><td>Goes to the AI model you picked, to pull out ideas and reply. With Ollama, it stays on your PC too.</td></tr>
+          <tr><th scope="row">Your map</th><td>Stays in <code>%APPDATA%\Thoughtspace</code>. No account, no cloud copy.</td></tr>
+          <tr><th scope="row">Usage data</th><td>None. The app sends no analytics.</td></tr>
+        </tbody>
+      </table>
+      <p class="note">The full breakdown, including imports from ChatGPT, Claude and Obsidian, is in <a href="https://github.com/Ronak1Nambiar/thoughtspace/blob/master/docs/YOUR-DATA.md">Your data</a>.</p>
+    </section>
+
+    <section id="install">
+      <h2>Up and running in two minutes</h2>
+      <ol class="steps">
+        <li><h3>Download and open it</h3><p>Run <code>Thoughtspace-Setup.exe</code>. It installs for you only and updates itself.</p></li>
+        <li><h3>Get past the Windows warning</h3><p>The app isn't code-signed yet, so Windows says it "protected your PC". Click <kbd>More info</kbd> then <kbd>Run anyway</kbd>. Signing is on the way.</p></li>
+        <li><h3>Connect a model and talk</h3><p>Pick a look, name your assistant, sign in with OpenRouter, then press <kbd>Start conversation</kbd>.</p></li>
+      </ol>
+      <p class="again"><a class="download" data-download href="https://github.com/Ronak1Nambiar/thoughtspace/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>Download for Windows</a></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>ThoughtSpace is free and open source under the MIT license.</p>
+    <p><a href="https://github.com/Ronak1Nambiar/thoughtspace">Source on GitHub</a> &nbsp; <a href="https://github.com/Ronak1Nambiar/thoughtspace/issues/new?labels=tester-feedback">Send feedback</a></p>
+  </footer>
+</div>
+
+<script>
+// Point the download buttons straight at the newest installer. Without the API, they open the releases page.
+fetch('https://api.github.com/repos/Ronak1Nambiar/thoughtspace/releases/latest').then(r=>r.ok?r.json():null).then(release=>{
+  const setup=release?.assets?.find(a=>/-Setup\.exe$/.test(a.name));
+  if(!setup)return;
+  document.querySelectorAll('[data-download]').forEach(a=>a.href=setup.browser_download_url);
+  const mb=Math.round(setup.size/1048576);
+  document.querySelector('[data-version]').innerHTML=`Version ${release.tag_name.replace(/^v/,'')}, ${mb} MB.<br>Free and open source, Windows 10 and 11.`;
+}).catch(()=>{});
+// Replay the hero moment by restarting its animations.
+document.querySelector('[data-replay]').addEventListener('click',()=>{
+  const figure=document.querySelector('.window');
+  figure.querySelectorAll('.said q,.node,.stage path').forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation='';});
+});
+</script>
+</body>
+</html>

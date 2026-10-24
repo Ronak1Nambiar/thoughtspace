@@ -1,0 +1,95 @@
+/* Interaction polish for the thought map. Motion follows real activity. */
+.map-mode { --map-accent: var(--accent); }
+.map-mode .workspace-heading .map-subtitle { display: block; margin: 6px 0 0; color: var(--text-3); font-size:var(--fs-md); }
+.map-mode .work-area { border-color: var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.map-mode .canvas-toolbar { background: var(--surface-1); }
+.thought-map { background: radial-gradient(ellipse at 48% 40%, color-mix(in srgb,var(--surface-2) 33%,transparent), transparent 68%), var(--bg); }
+.thought-map::before { display: block; background-image: radial-gradient(color-mix(in srgb,var(--text-3) 11%,transparent) 1px, transparent 1px); background-size: 24px 24px; }
+.map-mode button { transition: background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease; }
+.map-mode button:focus-visible { outline-color: var(--map-accent); }
+.map-thought, .map-thought.sand, .map-thought.lavender {
+  border-radius: var(--r-lg); background: var(--surface-2); border-color: color-mix(in srgb,var(--accent) 28%,var(--border));
+  box-shadow: 0 6px 18px color-mix(in srgb,var(--shadow) 13%,transparent); animation: thought-arrive .42s ease-out backwards;
+  animation-delay: var(--arrival-delay, 0ms);
+}
+.map-thought.sand { border-top-color: var(--warning); }
+.map-thought.lavender { border-top-color: var(--text-3); }
+.map-thought:hover:not(:disabled) { background: var(--surface-3); border-color: var(--text-3); box-shadow: 0 8px 24px color-mix(in srgb,var(--shadow) 20%,transparent); }
+.map-thought.connected { border-color: var(--text-4); }
+.map-thought.selected { background: color-mix(in srgb,var(--accent) 24%,var(--surface-2)); border-color: var(--map-accent); outline: 2px solid color-mix(in srgb,var(--accent) 20%,transparent); outline-offset: 3px; box-shadow: 0 0 24px color-mix(in srgb,var(--accent) 6%,transparent); }
+.map-thought strong { color: var(--text); }
+.map-node-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
+.map-thought.selected .map-node-dot { background: var(--map-accent); box-shadow: 0 0 8px color-mix(in srgb,var(--accent) 40%,transparent); }
+.map-lines path { transition: stroke .2s ease, opacity .2s ease; stroke: var(--text-4); }
+.map-lines path.manual { stroke: var(--text-3); }
+.map-lines path.ai { stroke: var(--text-3); }
+.map-lines path.highlighted { stroke: var(--text-2); stroke-width: 2; }
+.map-inspector { border-radius: var(--r-lg); background: var(--surface-2); border-color: color-mix(in srgb,var(--accent) 28%,var(--border)); box-shadow: 0 12px 32px color-mix(in srgb,var(--shadow) 27%,transparent); animation: panel-arrive .2s ease-out; }
+.map-controls { border-radius: var(--r-md); background: var(--surface-1); border-color: color-mix(in srgb,var(--accent) 28%,var(--border)); }
+.map-hint button { border-radius: var(--r-md); }
+.map-empty { padding: 38px 24px 64px; }
+.map-empty .map-seed { width: 190px; height: 86px; margin: 0 0 20px; overflow: visible; }
+.map-seed path { fill: none; stroke: var(--text-4); stroke-width: 1; stroke-dasharray: 3 5; }
+.map-seed circle { fill: var(--on-accent); stroke: var(--text-2); stroke-width: 1.5; }
+.map-seed circle:nth-of-type(2) { fill: var(--accent); stroke: var(--text); filter: drop-shadow(0 0 12px color-mix(in srgb,var(--accent) 27%,transparent)); }
+.map-empty-kicker { color: var(--text-3); font-size:var(--fs-xs); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+.map-empty h2 { font-size: clamp(26px, 3vw, 38px); letter-spacing: -1.1px; color: var(--text); margin-bottom: 9px; }
+.map-empty p { font-size:var(--fs-base); line-height: 1.8; max-width: 360px; margin: 0; color: var(--text-3); }
+.map-starters { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 22px 0 15px; pointer-events: auto; }
+.map-starters button { border: 1px solid color-mix(in srgb,var(--accent) 28%,var(--border)); background: var(--surface-2); color: var(--text-2); border-radius: var(--r-md); padding: 9px 12px; font-size:var(--fs-sm); gap: 9px; }
+.map-starters button:hover:not(:disabled) { border-color: var(--text-3); background: color-mix(in srgb,var(--accent) 24%,var(--surface-2)); }
+.map-empty-footnote { color: var(--text-3); font-size:var(--fs-xs); }
+.map-arrival { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; pointer-events: none; opacity: 0; transition: opacity .2s ease; white-space: nowrap; }
+.map-arrival.visible { opacity: 1; border: 1px solid color-mix(in srgb,var(--accent) 28%,var(--border)); border-radius: 20px; background: color-mix(in srgb,var(--accent) 14%,var(--surface-2)); padding: 8px 13px; color: var(--text-2); font-size:var(--fs-sm); box-shadow: 0 4px 15px color-mix(in srgb,var(--shadow) 20%,transparent); }
+.map-mode .composer-wrap { padding-top: 12px; }
+.map-mode .composer { border: 1px solid color-mix(in srgb,var(--accent) 28%,var(--border)); border-radius: var(--r-lg); background: var(--surface-2); padding: 0 15px 10px; transition: border-color .2s ease, box-shadow .2s ease; }
+.map-mode .composer:focus-within { border-color: var(--text-3); box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 4%,transparent); }
+.map-mode .composer-input textarea { font-size:var(--fs-xl); }
+.map-mode .composer-input textarea:focus { outline: none; }
+.map-mode .send { background: var(--text); border-color: var(--text-3); color: var(--on-accent); border-radius: var(--r-md); }
+.map-mode .send:hover:not(:disabled) { background: var(--text); color: var(--on-accent); }
+.map-mode .send:disabled { background: color-mix(in srgb,var(--accent) 24%,var(--surface-2)); border-color: color-mix(in srgb,var(--accent) 28%,var(--border)); color: var(--text-3); opacity: .65; }
+.map-mode .conversation-button { border-radius: var(--r-md); background: var(--text); border-color: var(--text-3); color: var(--on-accent); }
+.map-mode .conversation-button.is-live { background: color-mix(in srgb,var(--accent) 14%,var(--surface-2)); color: var(--text-2); border-color: var(--text-3); }
+.map-mode .voice-activity { padding: 7px 10px; border-radius: 20px; background: var(--surface-2); color: var(--text-2); }
+.voice-signal { display: none; align-items: center; gap: 3px; height: 16px; }
+.voice-signal i { width: 2px; height: 4px; border-radius: var(--r-xs); background: currentColor; }
+.map-mode .voice-activity.listening, .map-mode .voice-activity.speaking { color: var(--text-2); }
+.map-mode .voice-activity:is(.listening,.speaking) .activity-dot,
+.map-mode .voice-activity.speaking > svg { display: none; }
+.map-mode .voice-activity:is(.listening,.speaking) .voice-signal { display: flex; }
+.map-mode .voice-activity:is(.listening,.speaking) .voice-signal i { animation: voice-state 1s ease-in-out infinite alternate; }
+.voice-signal i:nth-child(2) { animation-delay: -.3s !important; }
+.voice-signal i:nth-child(3) { animation-delay: -.6s !important; }
+.voice-signal i:nth-child(4) { animation-delay: -.15s !important; }
+.map-mode .voice-activity.processing { color: var(--warning); }
+.map-mode .voice-activity.muted { color: var(--text-2); }
+@keyframes thought-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes panel-arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes voice-state { from { height: 4px; } to { height: 14px; } }
+@media(max-width:650px) {
+  .map-mode .workspace-heading .map-subtitle { display: none; }
+  .map-empty { padding: 20px 15px 56px; }
+  .map-empty .map-seed { width: 125px; height: 57px; margin-bottom: 12px; }
+  .map-empty-kicker { font-size:var(--fs-micro); margin-bottom: 9px; }
+  .map-empty h2 { font-size:var(--fs-2xl); }
+  .map-empty p { font-size:var(--fs-sm); }
+  .map-starters { gap: 6px; margin: 15px 0 10px; max-width: 300px; }
+  .map-starters button { padding: 7px 9px; font-size:var(--fs-xs); }
+  .map-empty-footnote { font-size:var(--fs-micro); }
+  .map-arrival { bottom: 54px; }
+  .map-mode .composer { padding: 0 10px 8px; }
+  .map-mode .composer-top { gap: 5px; }
+  .map-mode .mode-tabs { gap: 10px; }
+  .map-mode .voice-toggle { font-size:var(--fs-xs); }
+  .map-mode .voice-activity { padding: 5px 8px; }
+}
+@media(max-height:720px) {
+  .map-empty .map-seed { display: none; }
+  .map-empty-footnote { display: none; }
+  .map-empty { padding-top: 15px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .map-mode *, .map-mode *::before, .map-mode *::after { animation: none !important; transition: none !important; }
+  .voice-signal i:nth-child(2), .voice-signal i:nth-child(3) { height: 12px; }
+}

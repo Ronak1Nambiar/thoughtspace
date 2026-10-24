@@ -1,0 +1,84 @@
+/* Design tokens. Every colour, font, radius and text size in the app comes from here.
+   A look is a set of token values on <html data-theme data-mode data-accent data-density>. */
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/space-grotesk/wght.css';
+@import '@fontsource-variable/fraunces/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-500.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+
+:root,[data-theme=midnight]{
+  color-scheme:dark;
+  --font-body:'Inter Variable','Segoe UI',system-ui,sans-serif;
+  --font-display:'Space Grotesk Variable','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono Variable',Consolas,monospace;
+  --r-xs:3px;--r-sm:5px;--r-md:8px;--r-lg:12px;
+  --fs-micro:11px;--fs-xs:12px;--fs-sm:13px;--fs-md:14px;--fs-base:15px;--fs-lg:18px;--fs-xl:22px;--fs-2xl:30px;
+  /* Midnight (default) */
+  --bg:#0f1215;--surface-1:#15191d;--surface-2:#1b2025;--surface-3:#232930;--surface-4:#2c333b;
+  --border-subtle:#242a31;--border:#2e363f;--border-strong:#3d4751;
+  --text:#e6eaee;--text-2:#b9c2ca;--text-3:#8b96a0;--text-4:#5f6a74;
+  --shadow:#000;
+  --danger:#ff9d85;--warning:#e8c170;--info:#a9b8f0;
+  --accent:#7fdcc8;--accent-strong:#a9efe0;--on-accent:#0d1114;
+}
+[data-theme=graphite]{
+  color-scheme:dark;--shadow:#000;--font-mono:'JetBrains Mono Variable',Consolas,monospace;
+  --font-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;--font-display:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --r-xs:2px;--r-sm:4px;--r-md:6px;--r-lg:8px;
+  --bg:#0a0a0a;--surface-1:#111;--surface-2:#181818;--surface-3:#202020;--surface-4:#2a2a2a;
+  --border-subtle:#1f1f1f;--border:#2b2b2b;--border-strong:#3a3a3a;
+  --text:#f5f5f5;--text-2:#c8c8c8;--text-3:#9a9a9a;--text-4:#6a6a6a;
+}
+[data-theme=paper]{
+  color-scheme:light;
+  --font-body:'Inter Variable','Segoe UI',system-ui,sans-serif;--font-mono:'JetBrains Mono Variable',Consolas,monospace;
+  --font-display:'Fraunces Variable',Georgia,serif;
+  --r-xs:4px;--r-sm:6px;--r-md:10px;--r-lg:14px;
+  --bg:#f6f3ec;--surface-1:#fffdf8;--surface-2:#f1ede4;--surface-3:#e8e3d8;--surface-4:#ddd6c8;
+  --border-subtle:#e9e4d9;--border:#ddd6c9;--border-strong:#c8bfae;
+  --text:#1f1c17;--text-2:#4a443a;--text-3:#6f675a;--text-4:#9a917f;
+  --shadow:#3b3224;
+}
+[data-theme=workbench]{
+  color-scheme:light;
+  --font-mono:'JetBrains Mono Variable',Consolas,monospace;
+  --font-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;--font-display:'JetBrains Mono Variable',Consolas,monospace;
+  --r-xs:0px;--r-sm:2px;--r-md:3px;--r-lg:4px;
+  --bg:#eef0f2;--surface-1:#fff;--surface-2:#f3f5f7;--surface-3:#e6e9ec;--surface-4:#d9dde2;
+  --border-subtle:#e3e6ea;--border:#d4d9de;--border-strong:#b7bec6;
+  --text:#111417;--text-2:#3a4148;--text-3:#5d6670;--text-4:#8b949d;
+  --shadow:#1c2430;
+}
+[data-mode=dark]{--danger:#ff9d85;--warning:#e8c170;--info:#a9b8f0;--on-accent:#0d1114;--accent:#7fdcc8;--accent-strong:#a9efe0}
+[data-mode=light]{--danger:#b42318;--warning:#8a5a00;--info:#3b54c4;--on-accent:#fff}
+
+/* Accents: one hue, tuned for dark and light surfaces. */
+[data-accent=blue]{--accent:#8cb8ff;--accent-strong:#b8d3ff}
+[data-accent=violet]{--accent:#b9a2ff;--accent-strong:#d6c9ff}
+[data-accent=amber]{--accent:#f2c46d;--accent-strong:#f8dca3}
+[data-accent=rose]{--accent:#ff9fb0;--accent-strong:#ffc6d0}
+[data-accent=green]{--accent:#a6d98a;--accent-strong:#c9ebb7}
+[data-mode=light]{--accent:#0f7a68;--accent-strong:#0a5c4e}
+[data-mode=light][data-accent=blue]{--accent:#2459c9;--accent-strong:#1a4296}
+[data-mode=light][data-accent=violet]{--accent:#6b47d6;--accent-strong:#4f33a3}
+[data-mode=light][data-accent=amber]{--accent:#9a6400;--accent-strong:#734a00}
+[data-mode=light][data-accent=rose]{--accent:#b8344f;--accent-strong:#8c263b}
+[data-mode=light][data-accent=green]{--accent:#3d7a1f;--accent-strong:#2c5a16}
+
+[data-density=compact]{--fs-micro:10px;--fs-xs:11px;--fs-sm:12px;--fs-md:13px;--fs-base:14px;--fs-lg:17px;--fs-xl:20px;--fs-2xl:26px}
+
+html,body{background:var(--bg);color:var(--text)}
+
+/* While the look changes (appearance.js adds .theme-switching for ~0.4s), every colour fades to its new value.
+   Scoped to the switch so hovers and other animations keep their own timing the rest of the time. */
+html.theme-switching,html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after{
+  transition:background-color 360ms ease,color 360ms ease,border-color 360ms ease,outline-color 360ms ease,
+    text-decoration-color 360ms ease,fill 360ms ease,stroke 360ms ease,box-shadow 360ms ease!important;
+  transition-delay:0s!important;
+}
+@media(prefers-reduced-motion:reduce){html.theme-switching,html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after{transition:none!important}}
+
+/* Live previews of a look inside onboarding and Settings carry their own data-theme attributes. */
+[data-theme-preview]{background:var(--bg);color:var(--text);font-family:var(--font-body)}

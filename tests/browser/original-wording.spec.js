@@ -1,0 +1,37 @@
+import {test,expect,record} from './fixtures.js';
+
+test('original wording remains beside an editable summary through excerpt and transcript corrections',async({page})=>{
+  await page.route('**/api/health*',r=>r.fulfill({json:{configured:false,provider:'Groq'}}));
+  await page.goto('/?view=workbench');
+  const original='I want a dashboard for first-time customers.';
+  await page.getByRole('textbox',{name:'Capture a thought',exact:true}).fill(original);
+  await page.getByRole('button',{name:'Capture and extract ideas',exact:true}).click();
+  const data=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('thoughtspace.workspace.v1')));
+  await expect(page.getByTestId('idea-card')).toHaveCount(1);
+  const first=(await data()).cards[0];
+  await page.getByRole('button',{name:`Review wording: ${first.title}`,exact:true}).click();
+  await expect(page.getByTestId('original-wording')).toContainText(original);
+  await page.getByRole('textbox',{name:`Title for ${first.title}`,exact:true}).fill('Onboarding dashboard');
+  await page.getByRole('textbox',{name:'Add a note',exact:true}).fill('Keep the interview notes');
+  await page.getByRole('button',{name:'Save note to idea',exact:true}).click();
+  await page.getByText('Edit source excerpt',{exact:true}).click();
+  await page.getByRole('textbox',{name:'Source excerpt',exact:true}).fill('A dashboard for newly onboarded clients.');
+  await page.getByRole('textbox',{name:'Source excerpt',exact:true}).press('Tab');
+  await expect(page.getByTestId('corrected-wording')).toContainText('A dashboard for newly onboarded clients.');
+  await expect(page.getByTestId('original-wording')).toContainText(original);
+  await expect(page.getByTestId('original-wording')).toContainText(original);
+  await expect(page.getByTestId('idea-card').getByRole('heading')).toHaveText('Onboarding dashboard');
+  await page.getByText('Full original transcript',{exact:true}).click();
+  await expect(page.locator('.full-original')).toContainText(original);
+  await page.screenshot({path:'artifacts/original-wording.png',fullPage:true});
+  await page.getByRole('button',{name:'Correct source transcript',exact:true}).click();
+  await page.getByRole('textbox',{name:'Correct transcript',exact:true}).fill('I want a dashboard for new clients.');
+  await page.getByRole('button',{name:'Save correction',exact:true}).click();
+  await page.reload();
+  await page.getByRole('button',{name:'Review wording: Onboarding dashboard',exact:true}).click();
+  await expect(page.getByTestId('original-wording')).toContainText(original);
+  await expect(page.getByTestId('corrected-wording')).toContainText('A dashboard for newly onboarded clients.');
+  const saved=await data();expect(saved.cards).toHaveLength(1);expect(saved.cards[0].id).toBe(first.id);
+  expect(saved.cards[0].originalSource).toBe(original);expect(saved.cards[0].notes[0].text).toBe('Keep the interview notes');
+  expect(saved.captures[0].original).toBe(original);expect(saved.captures[0].text).toBe('I want a dashboard for new clients.');
+});

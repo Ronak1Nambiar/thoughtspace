@@ -1,0 +1,45 @@
+import {test,expect,record} from './fixtures.js';
+
+test('extraction creates matching inbox list entries and cards with shared edits and manual placement',async({page})=>{
+  await page.route('**/api/health*',r=>r.fulfill({json:{configured:false,provider:'Groq'}}));
+  await page.goto('/?view=workbench');await page.getByRole('button',{name:'Toggle inbox list'}).click();
+  const capture=async text=>{
+    await page.getByRole('textbox',{name:'Capture a thought',exact:true}).fill(text);
+    await page.getByRole('button',{name:'Capture and extract ideas',exact:true}).click();
+  };
+  const saved=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('thoughtspace.workspace.v1')));
+  await capture('I need to finish the proposal. I also have an idea for a customer dashboard, and I should prepare questions for Friday.');
+  const rows=page.getByTestId('inbox-idea'),cards=page.getByTestId('idea-card');
+  await expect(rows).toHaveCount(3);await expect(cards).toHaveCount(3);
+  await expect(page.getByRole('region',{name:'Inbox cards',exact:true}).getByTestId('idea-card')).toHaveCount(3);
+  expect(await rows.evaluateAll(nodes=>nodes.map(n=>n.dataset.ideaId))).toEqual(await cards.evaluateAll(nodes=>nodes.map(n=>n.dataset.ideaId)));
+  const original=await saved();expect(original.cards).toHaveLength(3);expect(original.cards.every(c=>c.position===null)).toBe(true);
+  await page.screenshot({path:'artifacts/inbox-list-desktop.png',fullPage:true});
+  await page.getByRole('button',{name:'Show card: A customer dashboard',exact:true}).click();
+  const dashboardId=original.cards.find(c=>c.title==='A customer dashboard').id;
+  const dashboard=page.locator(`[data-testid="idea-card"][data-idea-id="${dashboardId}"]`);
+  await expect(dashboard).toHaveClass(/selected/);
+  await page.getByRole('button',{name:'Notes',exact:true}).click();
+  await page.getByRole('textbox',{name:'Title for A customer dashboard',exact:true}).fill('Client dashboard');
+  await expect(page.getByRole('button',{name:'Show card: Client dashboard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(dashboard.getByRole('heading')).toHaveText('Client dashboard');
+  await page.getByRole('textbox',{name:'Add a note',exact:true}).fill('Focus on onboarding');
+  await page.getByRole('button',{name:'Save note to idea',exact:true}).click();
+  await expect(rows.filter({hasText:'Client dashboard'})).toContainText('1 note');
+  await expect(dashboard.locator('.card-bottom')).toContainText('1');
+  await page.getByRole('button',{name:'Move Client dashboard to canvas',exact:true}).click();
+  await expect(rows).toHaveCount(2);await expect(cards).toHaveCount(3);
+  await dashboard.click();await dashboard.press('ArrowRight');
+  const position=(await saved()).cards.find(c=>c.id===dashboardId).position;
+  await capture('Another distinct idea');
+  await expect(rows).toHaveCount(3);await expect(cards).toHaveCount(4);
+  expect((await saved()).cards.find(c=>c.id===dashboardId).position).toEqual(position);
+  await page.locator('.view-tabs').getByRole('button',{name:'Cards',exact:true}).click();
+  await expect(cards).toHaveCount(4);await expect(rows).toHaveCount(3);
+  await page.reload();await page.getByRole('button',{name:'Toggle inbox list'}).click();await expect(rows).toHaveCount(3);await expect(cards).toHaveCount(4);
+  const reopened=await saved();expect(reopened.cards.find(c=>c.id===dashboardId).notes[0].text).toBe('Focus on onboarding');
+  expect(reopened.cards.find(c=>c.id===dashboardId).position).toEqual(position);
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+  await page.screenshot({path:'artifacts/inbox-list-mobile.png',fullPage:true});
+});
